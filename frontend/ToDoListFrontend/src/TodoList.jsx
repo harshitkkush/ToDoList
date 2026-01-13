@@ -3,6 +3,14 @@ import axios from "axios";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 
+/* =======================
+   ENV CONFIG (IMPORTANT)
+======================= */
+const API_URL = process.env.REACT_APP_API_URL;
+
+/* =======================
+   STYLED COMPONENTS
+======================= */
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -87,6 +95,9 @@ const DeleteButton = styled.button`
   }
 `;
 
+/* =======================
+   COMPONENT
+======================= */
 function TodoList() {
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState("");
@@ -94,28 +105,40 @@ function TodoList() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/todos")
-      .then((response) => setTodos(response.data));
+      .get(`${API_URL}/api/todos`)
+      .then((response) => setTodos(response.data))
+      .catch((err) => console.error("Error fetching todos:", err));
   }, []);
 
   const addTodo = () => {
     if (!newTodo.trim()) return;
+
     axios
-      .post("http://localhost:8080/api/todos", { title: newTodo, completed })
-      .then((response) => setTodos([...todos, response.data]));
-    setNewTodo("");
-    setCompleted(false);
+      .post(`${API_URL}/api/todos`, {
+        title: newTodo,
+        completed
+      })
+      .then((response) => {
+        setTodos([...todos, response.data]);
+        setNewTodo("");
+        setCompleted(false);
+      })
+      .catch((err) => console.error("Error adding todo:", err));
   };
 
   const deleteTodo = (id) => {
     axios
-      .delete(`http://localhost:8080/api/todos/${id}`)
-      .then(() => setTodos(todos.filter((todo) => todo.id !== id)));
+      .delete(`${API_URL}/api/todos/${id}`)
+      .then(() =>
+        setTodos(todos.filter((todo) => todo.id !== id))
+      )
+      .catch((err) => console.error("Error deleting todo:", err));
   };
 
   return (
     <Container>
       <Title>Todo List</Title>
+
       <Form>
         <Input
           type="text"
@@ -123,6 +146,7 @@ function TodoList() {
           onChange={(e) => setNewTodo(e.target.value)}
           placeholder="Add a new task"
         />
+
         <CheckboxContainer>
           <input
             type="checkbox"
@@ -131,8 +155,10 @@ function TodoList() {
           />
           <CheckboxLabel>Completed</CheckboxLabel>
         </CheckboxContainer>
+
         <Button onClick={addTodo}>Add</Button>
       </Form>
+
       <List>
         <AnimatePresence>
           {todos.map((todo) => (
@@ -143,7 +169,7 @@ function TodoList() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              {todo.title} - {todo.completed ? "Done" : "Pending"}
+              {todo.title} — {todo.completed ? "Done" : "Pending"}
               <DeleteButton onClick={() => deleteTodo(todo.id)}>
                 Delete
               </DeleteButton>
