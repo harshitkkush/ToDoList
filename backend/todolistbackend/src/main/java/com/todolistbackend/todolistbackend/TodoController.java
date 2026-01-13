@@ -14,7 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/todos")
-@CrossOrigin(origins = "http://localhost:5173") // Allow React to access this controller
+@CrossOrigin(origins = {
+    "http://localhost:5173",
+    "https://todoapp-seven-gray.vercel.app"
+})// Allow React to access this controller
 public class TodoController {
     @Autowired
     private TodoService todoService;
